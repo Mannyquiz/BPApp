@@ -40,7 +40,6 @@ public class SignUpFragment extends Fragment implements View.OnClickListener {
 
         mFireBaseRef = new Firebase(FIRE_BASE_URL + USERS_ROUTE);
 
-        Log.d("flow", "OnCreate SingUpFragment");
     }
 
     @Nullable
@@ -56,7 +55,6 @@ public class SignUpFragment extends Fragment implements View.OnClickListener {
 
         userSignUpBtn.setOnClickListener(this);
 
-        Log.d("flow", "OnCreateView SingUpFragment");
         return layout;
     }
 

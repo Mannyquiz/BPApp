@@ -1,5 +1,6 @@
 package com.example.manny.viperprogramming;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -11,33 +12,27 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.firebase.client.AuthData;
-import com.firebase.client.Firebase;
-import com.firebase.client.FirebaseError;
-
 /**
  * Created by manny on 6/6/16.
  */
 public class LoginFragment extends Fragment {
-
-    public static final String FIRE_BASE_URL = "https://bpgo.firebaseio.com/";
-    public static final String USERS_ROUTE = "users/";
-
-    Firebase mFireBaseRef;
 
     private EditText userEmail;
     private EditText userPassword;
     private TextView forgotPassword;
     private Button loginBtn;
     private Button signUpBtn;
+    private OnLoginListener mListener;
+
+    public LoginFragment(){}
+
+    public interface OnLoginListener{
+        void onLogin(String email, String password);
+    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        mFireBaseRef = new Firebase(FIRE_BASE_URL + USERS_ROUTE);
-
-        Log.d("flow", "OnCreate LoginFragment");
     }
 
     @Nullable
@@ -56,7 +51,7 @@ public class LoginFragment extends Fragment {
         loginBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d("flow", "Login Button Clicked");
+
                 login();
             }
         });
@@ -66,7 +61,7 @@ public class LoginFragment extends Fragment {
             public void onClick(View v) {
                 LoginActivity activity = (LoginActivity) getActivity();
                 activity.replaceFragment(new ForgotPasswordFragment());
-                Log.d("flow", "Clicked ForgotPasswordFragment");
+
             }
         });
 
@@ -75,11 +70,11 @@ public class LoginFragment extends Fragment {
             public void onClick(View v) {
                 LoginActivity activity = (LoginActivity) getActivity();
                 activity.replaceFragment(new SignUpFragment());
-                Log.d("flow", "Clicked SignUp Fragment");
+
             }
         });
 
-        Log.d("flow", "OnCreateView LoginFragment");
+
 
         return layout;
     }
@@ -87,26 +82,14 @@ public class LoginFragment extends Fragment {
     public void login(){
 
         if(userEmail.length() == 0 || userPassword.length() == 0){
-            Log.d("flow", "more: " + userEmail.getText().toString());
             return;
         }
+        userEmail.setError(null);
+        userPassword.setError(null);
+        String email = userEmail.getText().toString();
+        String password = userPassword.getText().toString();
 
-        mFireBaseRef.authWithPassword(userEmail.getText().toString(), userPassword.getText().toString(), new Firebase.AuthResultHandler() {
-            @Override
-            public void onAuthenticated(AuthData authData) {
-                Log.d("flow", "User Authentication ID: " + authData.getUid()
-                        + " Token: " + authData.getToken()
-                        + " expires: " + authData.getExpires());
-            }
-
-            @Override
-            public void onAuthenticationError(FirebaseError firebaseError) {
-                Log.d("flow", "User authentication Failed " + firebaseError.getMessage());
-            }
-        });
-
-        LoginActivity activity = (LoginActivity) getActivity();
-        activity.replaceFragment(new HomeFragment());
+        mListener.onLogin(email, password);
 
         clearLoginInput();
     }
@@ -117,8 +100,18 @@ public class LoginFragment extends Fragment {
     }
 
     @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        try{
+            mListener = (OnLoginListener) getActivity();
+        }catch (ClassCastException e){
+            throw new ClassCastException(getActivity().toString()
+            + " must implement OnFragment");
+        }
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
-        Log.d("flow", "onResume LoginFragment");
     }
 }
